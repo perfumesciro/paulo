@@ -1,0 +1,373 @@
+
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>INFINITE CLICKER</title>
+<style>
+:root {
+  --bg: #090b12;
+  --panel: #121625;
+  --accent: #7c5cff;
+  --cyan: #21d4fd;
+  --text: #f5f6ff;
+  --muted: #969db7;
+}
+* { box-sizing: border-box; }
+body {
+  margin: 0;
+  min-height: 100vh;
+  background: radial-gradient(ellipse at top, #202047 0%, var(--bg) 55%);
+  color: var(--text);
+  font-family: system-ui, Arial, sans-serif;
+}
+header {
+  padding: 24px 16px;
+  text-align: center;
+  border-bottom: 1px solid #ffffff12;
+}
+.logo {
+  font-size: 12px;
+  letter-spacing: 5px;
+  color: var(--cyan);
+  font-weight: 800;
+}
+h1 { margin: 8px 0; font-size: clamp(25px, 5vw, 40px); }
+header p { color: var(--muted); margin: 0; font-size: 13px; }
+main {
+  width: min(1050px, 100%);
+  padding: 22px 16px 40px;
+  margin: auto;
+}
+.stats {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+}
+.card, .panel {
+  background: linear-gradient(145deg, #171c30, #101321);
+  border: 1px solid #ffffff12;
+  border-radius: 18px;
+  padding: 16px;
+}
+.stat-label { color: var(--muted); font-size: 12px; }
+.stat-value { font-size: clamp(17px, 3vw, 27px); font-weight: 800; margin-top: 7px; overflow-wrap: anywhere; }
+.game {
+  display: grid;
+  grid-template-columns: 1.1fr 0.9fr;
+  gap: 16px;
+  margin-top: 16px;
+}
+.play-area {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 370px;
+  text-align: center;
+}
+.coin {
+  font-size: 12px;
+  color: var(--cyan);
+  letter-spacing: 2px;
+  font-weight: 800;
+}
+#clickButton {
+  width: 190px;
+  height: 190px;
+  margin: 24px 0;
+  border-radius: 50%;
+  border: 4px solid #a99aff;
+  background: radial-gradient(circle at 35% 25%, #a58cff, #6841ef 60%, #352080);
+  box-shadow: 0 0 35px #7c5cff55, inset 0 -10px 20px #0003;
+  color: white;
+  font-size: 65px;
+  cursor: pointer;
+  transition: transform .09s, box-shadow .15s;
+  user-select: none;
+  touch-action: manipulation;
+}
+#clickButton:hover { box-shadow: 0 0 55px #7c5cff99; }
+#clickButton:active { transform: scale(.92); }
+#clickButton.bump { animation: bump .18s; }
+@keyframes bump {
+  50% { transform: scale(1.07); }
+}
+.hint { font-size: 13px; color: var(--muted); }
+.section-title { margin: 0 0 14px; font-size: 18px; }
+.shop { display: grid; gap: 10px; }
+.upgrade {
+  background: #ffffff06;
+  border: 1px solid #ffffff12;
+  border-radius: 13px;
+  padding: 13px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.upgrade-icon { font-size: 27px; }
+.upgrade-info { flex: 1; min-width: 0; }
+.upgrade-name { font-size: 14px; font-weight: 800; }
+.upgrade-desc { font-size: 12px; color: var(--muted); margin-top: 4px; }
+.buy {
+  background: var(--accent);
+  color: white;
+  border: 0;
+  border-radius: 10px;
+  padding: 10px 12px;
+  font-weight: 800;
+  cursor: pointer;
+  min-width: 84px;
+}
+.buy:disabled { opacity: .35; cursor: not-allowed; }
+.progress-wrap { margin-top: 20px; }
+.progress-head { display: flex; justify-content: space-between; gap: 8px; font-size: 12px; color: var(--muted); }
+.progress { height: 8px; background: #ffffff12; border-radius: 10px; margin-top: 9px; overflow: hidden; }
+#progressBar { height: 100%; width: 0%; background: linear-gradient(90deg, var(--accent), var(--cyan)); transition: width .2s; }
+.bottom {
+  margin-top: 16px;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+.achievement { display: flex; gap: 10px; align-items: center; padding: 10px 0; border-bottom: 1px solid #ffffff0d; font-size: 13px; }
+.achievement:last-child { border-bottom: 0; }
+.locked { opacity: .4; }
+.actions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 15px; }
+.secondary {
+  background: #ffffff0c; border: 1px solid #ffffff20;
+  border-radius: 10px; color: white; padding: 10px 13px; cursor: pointer;
+}
+footer { text-align: center; color: #777f9a; padding: 15px; font-size: 11px; }
+@media(max-width:650px) {
+  .game, .bottom { grid-template-columns: 1fr; }
+  .stats { gap: 7px; }
+  .card { padding: 11px; }
+  .play-area { min-height: 330px; }
+  #clickButton { width: 170px; height: 170px; }
+}
+</style>
+</head>
+<body>
+<header>
+  <div class="logo">INFINITE GAMES</div>
+  <h1>INFINITE CLICKER</h1>
+  <p>Un clic más. Una mejora más. Sin límites.</p>
+</header>
+
+<main>
+  <section class="stats">
+    <div class="card">
+      <div class="stat-label">🪙 MONEDAS</div>
+      <div class="stat-value" id="coins">0</div>
+    </div>
+    <div class="card">
+      <div class="stat-label">👆 POR CLIC</div>
+      <div class="stat-value" id="perClick">1</div>
+    </div>
+    <div class="card">
+      <div class="stat-label">⚡ POR SEGUNDO</div>
+      <div class="stat-value" id="perSecond">0</div>
+    </div>
+  </section>
+
+  <section class="game">
+    <div class="panel play-area">
+      <div class="coin">◆ TOCÁ PARA GANAR ◆</div>
+      <button id="clickButton" aria-label="Ganar monedas">🪙</button>
+      <div class="hint">Cada toque te acerca al siguiente nivel</div>
+      <div class="progress-wrap" style="width:100%">
+        <div class="progress-head">
+          <span id="levelText">Nivel 1</span>
+          <span id="levelProgress">0 / 100</span>
+        </div>
+        <div class="progress"><div id="progressBar"></div></div>
+      </div>
+    </div>
+
+    <div class="panel">
+      <h2 class="section-title">🛒 Tienda de mejoras</h2>
+      <div class="shop">
+        <div class="upgrade">
+          <div class="upgrade-icon">👆</div>
+          <div class="upgrade-info">
+            <div class="upgrade-name">Dedo poderoso</div>
+            <div class="upgrade-desc">+1 moneda por clic</div>
+            <div class="upgrade-desc">Nivel: <span id="fingerLevel">0</span></div>
+          </div>
+          <button class="buy" id="buyClick">🪙 25</button>
+        </div>
+        <div class="upgrade">
+          <div class="upgrade-icon">🤖</div>
+          <div class="upgrade-info">
+            <div class="upgrade-name">Autoclicker</div>
+            <div class="upgrade-desc">+1 moneda por segundo</div>
+            <div class="upgrade-desc">Nivel: <span id="autoLevel">0</span></div>
+          </div>
+          <button class="buy" id="buyAuto">🪙 100</button>
+        </div>
+        <div class="upgrade">
+          <div class="upgrade-icon">🚀</div>
+          <div class="upgrade-info">
+            <div class="upgrade-name">Multiplicador</div>
+            <div class="upgrade-desc">Duplica tus monedas por clic</div>
+            <div class="upgrade-desc">Nivel: <span id="multiLevel">0</span></div>
+          </div>
+          <button class="buy" id="buyMulti">🪙 500</button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="bottom">
+    <div class="panel">
+      <h2 class="section-title">🏆 Logros</h2>
+      <div class="achievement locked" id="ach1">🔒 <span>Primeras 100 monedas</span></div>
+      <div class="achievement locked" id="ach2">🔒 <span>Gran fortuna: 1.000 monedas</span></div>
+      <div class="achievement locked" id="ach3">🔒 <span>Magnate: 10.000 monedas</span></div>
+      <div class="achievement locked" id="ach4">🔒 <span>Maestro del clic: 100.000 monedas</span></div>
+    </div>
+    <div class="panel">
+      <h2 class="section-title">📊 Tu partida</h2>
+      <div class="achievement">🖱️ Total de clics: <strong id="totalClicks">0</strong></div>
+      <div class="achievement">💰 Monedas ganadas: <strong id="totalEarned">0</strong></div>
+      <div class="achievement">🛍️ Mejoras compradas: <strong id="totalUpgrades">0</strong></div>
+      <div class="actions">
+        <button class="secondary" id="saveButton">💾 Guardar</button>
+        <button class="secondary" id="resetButton">↻ Reiniciar</button>
+      </div>
+      <p class="hint" id="saveStatus">Guardado automático activado.</p>
+    </div>
+  </section>
+</main>
+<footer>INFINITE CLICKER · Tu progreso se guarda en este navegador.</footer>
+
+<script>
+const $ = id => document.getElementById(id);
+const initial = {
+  coins: 0, earned: 0, clicks: 0,
+  finger: 0, auto: 0, multi: 0, upgrades: 0
+};
+let game = { ...initial };
+
+function number(n) {
+  if (n >= 1e15) return n.toExponential(2);
+  return Math.floor(n).toLocaleString("es-AR");
+}
+function clickPower() {
+  return (1 + game.finger) * Math.pow(2, game.multi);
+}
+function clickCost() { return Math.floor(25 * Math.pow(1.65, game.finger)); }
+function autoCost() { return Math.floor(100 * Math.pow(1.8, game.auto)); }
+function multiCost() { return Math.floor(500 * Math.pow(3, game.multi)); }
+
+function earn(amount) {
+  if (!Number.isFinite(amount) || amount <= 0) return;
+  game.coins += amount;
+  game.earned += amount;
+}
+function clickCoin() {
+  earn(clickPower());
+  game.clicks++;
+  $("clickButton").classList.remove("bump");
+  void $("clickButton").offsetWidth;
+  $("clickButton").classList.add("bump");
+  render();
+}
+$("clickButton").addEventListener("click", clickCoin);
+
+function buy(type) {
+  const costs = {
+    finger: clickCost(),
+    auto: autoCost(),
+    multi: multiCost()
+  };
+  const cost = costs[type];
+  if (game.coins < cost) return;
+  game.coins -= cost;
+  game[type]++;
+  game.upgrades++;
+  render();
+}
+$("buyClick").onclick = () => buy("finger");
+$("buyAuto").onclick = () => buy("auto");
+$("buyMulti").onclick = () => buy("multi");
+
+function render() {
+  $("coins").textContent = number(game.coins);
+  $("perClick").textContent = number(clickPower());
+  $("perSecond").textContent = number(game.auto);
+  $("fingerLevel").textContent = game.finger;
+  $("autoLevel").textContent = game.auto;
+  $("multiLevel").textContent = game.multi;
+  $("totalClicks").textContent = number(game.clicks);
+  $("totalEarned").textContent = number(game.earned);
+  $("totalUpgrades").textContent = number(game.upgrades);
+
+  $("buyClick").textContent = "🪙 " + number(clickCost());
+  $("buyAuto").textContent = "🪙 " + number(autoCost());
+  $("buyMulti").textContent = "🪙 " + number(multiCost());
+
+  $("buyClick").disabled = game.coins < clickCost();
+  $("buyAuto").disabled = game.coins < autoCost();
+  $("buyMulti").disabled = game.coins < multiCost();
+
+  const level = Math.floor(Math.log10(Math.max(1, game.earned))) + 1;
+  const target = Math.pow(10, level) * 10;
+  const previous = level === 1 ? 0 : Math.pow(10, level - 1) * 10;
+  const pct = Math.max(0, Math.min(100, (game.earned - previous) / (target - previous) * 100));
+  $("levelText").textContent = "Nivel " + level;
+  $("levelProgress").textContent = number(game.earned) + " / " + number(target);
+  $("progressBar").style.width = pct + "%";
+
+  const thresholds = [100, 1000, 10000, 100000];
+  thresholds.forEach((n, i) => {
+    const el = $("ach" + (i + 1));
+    const unlocked = game.earned >= n;
+    el.classList.toggle("locked", !unlocked);
+    el.firstChild.textContent = unlocked ? "🏆 " : "🔒 ";
+  });
+}
+
+function save() {
+  try {
+    localStorage.setItem("infiniteClickerSave", JSON.stringify(game));
+    $("saveStatus").textContent = "Partida guardada correctamente.";
+  } catch (e) {
+    $("saveStatus").textContent = "No se pudo guardar en este navegador.";
+  }
+}
+function load() {
+  try {
+    const saved = JSON.parse(localStorage.getItem("infiniteClickerSave"));
+    if (!saved || typeof saved !== "object") return;
+    for (const key of Object.keys(initial)) {
+      const value = saved[key];
+      if (typeof value === "number" && Number.isFinite(value) && value >= 0) {
+        game[key] = Math.floor(value);
+      }
+    }
+  } catch (e) {
+    game = { ...initial };
+  }
+}
+$("saveButton").onclick = save;
+$("resetButton").onclick = () => {
+  if (!confirm("¿Seguro que querés borrar toda tu partida?")) return;
+  game = { ...initial };
+  save();
+  render();
+};
+
+load();
+render();
+setInterval(() => {
+  earn(game.auto);
+  render();
+}, 1000);
+setInterval(save, 5000);
+window.addEventListener("beforeunload", save);
+</script>
+</body>
+</html>
